@@ -24,12 +24,6 @@ const cartsRouter = require('./routes/carts');
 app.use('/api/products', productsRouter);
 app.use('/api/carts', cartsRouter);
 
-// Pasar la instancia de io a los routers
-app.use((req, res, next) => {
-    req.io = io;
-    next();
-});
-
 // Vista de productos en tiempo real
 app.get('/realtimeproducts', (req, res) => {
     res.render('realTimeProducts', { products: [] });
@@ -43,6 +37,16 @@ app.get('/home', (req, res) => {
 // Escuchar conexiones de WebSocket
 io.on('connection', (socket) => {
     console.log('Usuario conectado');
+
+    // Escuchar evento de creación de producto
+    socket.on('productoCreado', (producto) => {
+        io.emit('productoActualizado', producto);
+    });
+
+    // Escuchar evento de eliminación de producto
+    socket.on('productoEliminado', (productoId) => {
+        io.emit('productoEliminado', productoId);
+    });
 
     socket.on('disconnect', () => {
         console.log('Usuario desconectado');
